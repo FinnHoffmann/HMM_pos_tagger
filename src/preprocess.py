@@ -1,93 +1,41 @@
-import os
+import conllu
 
-def load_conllu_file(file_path):
-    """
-    Lädt eine CoNLL-U-Datei und gibt die Token- und Tag-Sequenzen zurück.
-    """
-    sentences = []
-    sentence = []
+def load_conllu_data(file_path):
+    data = []
     
+    # Open and parse the CoNLL-U file
     with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            line = line.strip()
-            
-            # Überspringe leere Zeilen oder Kommentare
-            if line == '' or line.startswith('#'):
-                continue
-            
-            # Teile die Zeile in Felder und stelle sicher, dass es mindestens 10 Felder gibt
-            parts = line.split('\t')
-            if len(parts) == 10:
-                token = parts[1]    # Wort (Token)
-                tag = parts[3]      # POS-Tag
-                sentence.append((token, tag))
-            else:
-                # Falls weniger als 10 Felder, überspringe diese Zeile
-                continue
-            
-            # Wenn der Satz abgeschlossen ist, füge ihn der Liste hinzu
-            if line == '':
-                if sentence:
-                    sentences.append(sentence)
-                    sentence = []
-    
-    # Falls der letzte Satz noch nicht hinzugefügt wurde, füge ihn hinzu
-    if sentence:
-        sentences.append(sentence)
-    
-    return sentences
-
-
-def load_all_data(data_dir):
-    """
-    Lädt alle CoNLL-U-Dateien im angegebenen Verzeichnis und gibt die Token- und Tag-Sequenzen zurück.
-    """
-    all_data = {}
-    
-    for root, dirs, files in os.walk(data_dir):
-        for file in files:
-            if file.endswith('.conllu'):
-                file_path = os.path.join(root, file)
-                print(f"Lade Datei: {file_path}")
-                sentences = load_conllu_file(file_path)
-                all_data[file] = sentences
-    
-    return all_data
-
-def create_vocab(data):
-    """
-    Erstellt ein Vokabular aus den geladenen Daten und gibt es zurück.
-    """
-    vocab = set()
-    for sentences in data.values():
+        sentences = conllu.parse(file.read())  # Parse the entire file
+        
+        # Loop through each sentence
         for sentence in sentences:
-            for token, _ in sentence:
-                vocab.add(token.lower())  # Normalisieren zu Kleinbuchstaben
-    return vocab
+            sentence_words = []
+            sentence_pos_tags = []
+            
+            # Loop through each token in the sentence
+            for token in sentence:
+                word = token['form']  # The word is in the 'form' key
+                pos_tag = token['upostag']  # The POS tag is in the 'upostag' key
+                
+                sentence_words.append(word)
+                sentence_pos_tags.append(pos_tag)
+            
+            # Append the sentence's words and POS tags as a tuple to the data
+            data.append((sentence_words, sentence_pos_tags))
+    
+    return data
 
-def create_tagset(data):
-    """
-    Erstellt eine Tagset aus den geladenen Daten und gibt es zurück.
-    """
-    tagset = set()
-    for sentences in data.values():
-        for sentence in sentences:
-            for _, tag in sentence:
-                tagset.add(tag)
-    return tagset
+
 
 if __name__ == "__main__":
-    # Beispiel: Verzeichnis mit den CoNLL-U-Daten
-    data_dir = '../data/UD_English-EWT'
-    file_path = r"C:\Users\Finn Hoffmann\Documents\Semester 11 (Spanien)\Computational Syntax\HMM_pos_tagger_assignment\data\UD_English-EWT\en_ewt-ud-train.conllu"
+    file_path = "../data/UD_English-EWT/en_ewt-ud-train.conllu"
 
-    # Alle Daten laden
-    all_data = load_all_data(data_dir)
-    
-    # Vokabular und Tagset erstellen
-    vocab = create_vocab(all_data)
-    tagset = create_tagset(all_data)
+   # Load the data from the CoNLL-U file
+    data = load_conllu_data(file_path)
 
-    print(load_conllu_file(file_path=file_path)[:1])
-    # print(f"Vokabular: {len(vocab)} Wörter")
-    # print(f"Tagset: {len(tagset)} Tags")
+    # Access the first sentence (first tuple in the list)
+    first_sentence_words, first_sentence_pos_tags = data[0]
+
+    # Print the words and POS tags for the first sentence
+    print("Words:", first_sentence_words)
+    print("POS Tags:", first_sentence_pos_tags)
