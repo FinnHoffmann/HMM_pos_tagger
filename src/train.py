@@ -59,5 +59,3 @@ file_path = "../data/UD_English-EWT/en_ewt-ud-train.conllu"
    # Load the data from the CoNLL-U file
 data = load_conllu_data(file_path)
 initial_probs, transition_probs, emission_probs = calculate_probabilities_from_data(data)
-
-print(emission_probs)

@@ -25,17 +25,3 @@ def load_conllu_data(file_path):
     
     return data
 
-
-
-if __name__ == "__main__":
-    file_path = "../data/UD_English-EWT/en_ewt-ud-train.conllu"
-
-   # Load the data from the CoNLL-U file
-    data = load_conllu_data(file_path)
-
-    # Access the first sentence (first tuple in the list)
-    first_sentence_words, first_sentence_pos_tags = data[0]
-
-    # Print the words and POS tags for the first sentence
-    print("Words:", first_sentence_words)
-    print("POS Tags:", first_sentence_pos_tags)
