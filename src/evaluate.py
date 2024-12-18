@@ -81,3 +81,47 @@ def evaluate_pos_tagger_errors_by_sentence_length(initial_probs, transition_prob
         print(f"Sentence length {interval[0]}-{int(interval[1]) if interval[1] != float('inf') else '∞'}: {error_rate:.2%} error rate ({errors}/{total} tags)")
     
     return interval_stats
+
+def evaluate_pos_tagger_errors_for_rare_words(train_file_path, test_file_path):
+    # Load the training and test data
+    train_data = load_conllu_data(train_file_path)
+    test_data = load_conllu_data(test_file_path)
+    
+    # Count word frequencies in the training data
+    word_counter = Counter(word for sentence_words, _ in train_data for word in sentence_words)
+    
+    # Categorize words by frequency
+    rare_word_categories = {
+        "1-2 occurrences": set(word for word, count in word_counter.items() if 1 <= count <= 2),
+        "3-5 occurrences": set(word for word, count in word_counter.items() if 3 <= count <= 5),
+        "6-10 occurrences": set(word for word, count in word_counter.items() if 6 <= count <= 10),
+    }
+    
+    # Train the model on the training data
+    initial_probs, transition_probs, emission_probs = calculate_probabilities_from_data(train_data)
+    
+    # Initialize error statistics for each category
+    error_stats = {category: {"total": 0, "errors": 0} for category in rare_word_categories}
+    
+    # Predict POS tags for the test data
+    for test_sentence_words, test_sentence_tags in test_data:
+        predicted_tags = viterbi_algorithm(test_sentence_words, initial_probs, transition_probs, emission_probs)
+        
+        # Evaluate errors for each word in the sentence
+        for word, predicted_tag, actual_tag in zip(test_sentence_words, predicted_tags, test_sentence_tags):
+            for category, word_set in rare_word_categories.items():
+                if word in word_set:
+                    error_stats[category]["total"] += 1
+                    if predicted_tag != actual_tag:
+                        error_stats[category]["errors"] += 1
+                    break
+    
+    # Calculate and display error rates for each category
+    print("Error rates for rare words:")
+    for category, stats in error_stats.items():
+        total = stats["total"]
+        errors = stats["errors"]
+        error_rate = errors / total if total > 0 else 0
+        print(f"{category}: {error_rate:.2%} error rate ({errors}/{total} words)")
+    
+    return error_stats
