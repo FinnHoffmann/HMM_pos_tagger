@@ -51,4 +51,6 @@ def main(train_dataset="EWT", test_dataset="reviews"):
 
 if __name__ == "__main__":
     # Modify arguments here to switch datasets
-    main(train_dataset="EWT", test_dataset="GUM")
+    # train_dataset can be "EWT" or "GUM"
+    # test_dataset can be "EWT", "GUM" or "reviews"
+    main(train_dataset="EWT", test_dataset="reviews")
