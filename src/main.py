@@ -53,4 +53,4 @@ if __name__ == "__main__":
     # Modify arguments here to switch datasets
     # train_dataset can be "EWT" or "GUM"
     # test_dataset can be "EWT", "GUM" or "reviews"
-    main(train_dataset="EWT", test_dataset="reviews")
+    main(train_dataset="GUM", test_dataset="reviews")
